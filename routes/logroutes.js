@@ -1,6 +1,6 @@
 const express = require("express");
 const { uploadpdf,uploadcsv } = require("../multer");
-const { getData, createData,getPdf,createCsv } = require("../controller/logController");
+const { getData, createData,getPdf,createCsv,exportCsv } = require("../controller/logController");
 
 const router = express.Router();
 
@@ -19,6 +19,10 @@ router.post("/pdf/upload", uploadpdf.single("file"),async(req,res)=>{
 
 router.post("/csvupload",uploadcsv.single("file"),async(req,res)=>{
     createCsv(req,res);
+});
+
+router.get("/export", async (req,res)=>{
+    exportCsv(req,res);
 })
 
 
