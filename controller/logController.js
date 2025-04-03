@@ -196,7 +196,7 @@ const exportCsv = async (req, res) => {
         const filePath = path.join(dirPath, "leads.csv");
         const writeStream = fs.createWriteStream(filePath);
 
-        console.log("Writing CSV to:", filePath);
+        // console.log("Writing CSV to:", filePath);
 
 
         fastCsv
@@ -209,11 +209,11 @@ const exportCsv = async (req, res) => {
                 res.download(filePath, "leads.csv", (err) => {
                     if (err) {
                         console.error("Download Error:", err);
-                        res.status(500).json({ 
-                            success: false, 
-                            message: "Error downloading file." 
+                        res.status(500).json({
+                            success: false,
+                            message: "Error downloading file."
                         });
-                    } 
+                    }
                 });
             });
 
@@ -227,7 +227,106 @@ const exportCsv = async (req, res) => {
     }
 }
 
+const updateData = async (req, res) => {
+    try {
+        const { lead_id } = req.body;
 
 
+        if (!lead_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Provide lead_id",
+            });
+        }
 
-module.exports = { getData, createData, getPdf, createCsv, exportCsv }
+
+        const filePath = req.file ? req.file.path : null;
+
+
+        const query = "UPDATE tbl_lead SET file_path=? WHERE lead_id=?";
+        const result = await executeQuery(query, [filePath, lead_id]);
+
+        console.log("data =>", result);
+
+        return res.status(200).json({
+            success: true,
+            message: "Lead updated ",
+            data: { filePath },
+        });
+    } catch (error) {
+        console.error(error);
+        res.send({
+            success: false,
+            message: "Error in Updating the data",
+            error,
+        });
+    }
+}
+
+// const updateData = async (req, res) => {
+//     try {
+//         const { lead_id, names, email, phone, designation, city, fbid } = req.body;
+
+//         if (!lead_id || !names || !email || !phone || !designation || !city || !fbid) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Provide all required fields",
+//             });
+//         }
+
+//         const filePath = req.file ? req.file.path : null;
+
+//         const query = `
+//             UPDATE tbl_lead 
+//             SET name = ?, email = ?, phone = ?, designation = ?, file_path = ?, city = ?, fbid = ?, updated_date = NOW()
+//             WHERE lead_id = ?
+//         `;
+
+//         const result = await executeQuery(query, [names, email, phone, designation, filePath, city, fbid, lead_id]);
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "Lead updated successfully",
+//             data: {
+//                 lead_id, names, email, phone, designation, filePath, city, FBID, updated_date: Date.now()
+//             },
+//         });
+
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({
+//             success: false,
+//             message: "Error in updating lead",
+//             error: error.message,
+//         });
+//     }
+// };
+
+const getLead_id = async (req, res) => {
+    try {
+        const { lead_id } = req.params;
+
+        if (!lead_id) {
+            return res.status(400).json({ message: "Provide Lead ID" });
+        }
+
+        // console.log('LeadId:', lead_id);
+        
+        const query = "SELECT * FROM tbl_lead WHERE lead_id = ?";
+        const result = await executeQuery(query, [lead_id]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: "Lead not found" });
+        } 
+
+        res.json(result[0]);
+    } catch (error) {
+        console.error(error);
+        res.send({
+            message: "Couldn't get the lead id"
+        });
+    }
+};
+
+
+module.exports = { getData, createData, getPdf, createCsv, exportCsv, updateData, getLead_id }

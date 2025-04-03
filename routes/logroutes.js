@@ -1,6 +1,6 @@
 const express = require("express");
 const { uploadpdf,uploadcsv } = require("../multer");
-const { getData, createData,getPdf,createCsv,exportCsv } = require("../controller/logController");
+const { getData, createData,getPdf,createCsv,exportCsv,updateData,getLead_id } = require("../controller/logController");
 
 const router = express.Router();
 
@@ -23,7 +23,18 @@ router.post("/csvupload",uploadcsv.single("file"),async(req,res)=>{
 
 router.get("/export", async (req,res)=>{
     exportCsv(req,res);
-})
+});
+
+router.put("/update/:lead_id",uploadpdf.single("cv"), async (req, res) => {
+    updateData(req, res);
+});
+
+// router.get("/data/:lead_id", async (req,res)=>{
+//     getLead_id(req,res);
+// });
+router.get("/data/:lead_id", getLead_id);
+
+// router.put('/api/update-lead/:id', uploadpdf.single('file'), updateData);
 
 
 
