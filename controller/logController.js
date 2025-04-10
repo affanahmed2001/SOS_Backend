@@ -1,8 +1,10 @@
 const { executeQuery } = require("../config/db.js");
 const fs = require("fs");
 const fastCsv = require("fast-csv");
-const path = require("path")
+const path = require("path");
+const os = require("os");
 const csvParser = require('csv-parser');
+const bcrypt = require('bcrypt');
 
 
 // Connection
@@ -10,9 +12,8 @@ const getData = async (req, res) => {
     try {
         const query = `SELECT * FROM tbl_lead`;
         const result = await executeQuery(query);
-        // console.log(result);
 
-        if (!result) {
+        if (result.length === 0) {
             res.send({
                 success: false,
                 message: "Could not get all data",
@@ -70,6 +71,7 @@ const createData = async (req, res) => {
     }
 };
 
+// GET PDF
 const getPdf = async (req, res) => {
     try {
         if (!req.file) {
@@ -83,6 +85,7 @@ const getPdf = async (req, res) => {
     }
 }
 
+// CREATE CSV
 const createCsv = async (req, res) => {
     // console.log("Request received!");
     // console.log("req.file:", req.file);
@@ -164,6 +167,7 @@ const createCsv = async (req, res) => {
     }
 };
 
+// EXPORT CSV
 const exportCsv = async (req, res) => {
     try {
         const { start_date, end_date } = req.query;
@@ -187,15 +191,10 @@ const exportCsv = async (req, res) => {
         }
 
 
-        // const writeStream = fs.createWriteStream(filePath);
-        const dirPath = path.join(__dirname, "../assets/exports/");
-        if (!fs.existsSync(dirPath)) {
-            fs.mkdirSync(dirPath, { recursive: true });
-        }
-
-        const filePath = path.join(dirPath, "leads.csv");
+        const fileName = `leads_${start_date}-${end_date}.csv`;
+        const downloadsPath = path.join(os.homedir(), "Downloads");
+        const filePath = path.join(downloadsPath, fileName);
         const writeStream = fs.createWriteStream(filePath);
-
         // console.log("Writing CSV to:", filePath);
 
 
@@ -203,9 +202,7 @@ const exportCsv = async (req, res) => {
             .write(data, { headers: true })
             .pipe(writeStream)
             .on("finish", () => {
-
                 // console.log("CSV file written successfully:", filePath);
-
                 res.download(filePath, "leads.csv", (err) => {
                     if (err) {
                         console.error("Download Error:", err);
@@ -227,9 +224,10 @@ const exportCsv = async (req, res) => {
     }
 }
 
+// UPDATE DATA
 const updateData = async (req, res) => {
     try {
-        const { lead_id } = req.body;
+        const { lead_id, name, email, phone, designation, city } = req.body;
 
 
         if (!lead_id) {
@@ -243,15 +241,15 @@ const updateData = async (req, res) => {
         const filePath = req.file ? req.file.path : null;
 
 
-        const query = "UPDATE tbl_lead SET file_path=? WHERE lead_id=?";
-        const result = await executeQuery(query, [filePath, lead_id]);
+        const query = "UPDATE tbl_lead SET name=?,email=?,phone=?,designation=?,file_path=?,city=?,created_date=NOW() WHERE lead_id=?";
+        const result = await executeQuery(query, [name, email, phone, designation, filePath, city, lead_id]);
 
-        console.log("data =>", result);
+        // console.log("data =>", result);
 
         return res.status(200).json({
             success: true,
             message: "Lead updated ",
-            data: { filePath },
+            data: { name, email, filePath },
         });
     } catch (error) {
         console.error(error);
@@ -263,45 +261,7 @@ const updateData = async (req, res) => {
     }
 }
 
-// const updateData = async (req, res) => {
-//     try {
-//         const { lead_id, names, email, phone, designation, city, fbid } = req.body;
-
-//         if (!lead_id || !names || !email || !phone || !designation || !city || !fbid) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Provide all required fields",
-//             });
-//         }
-
-//         const filePath = req.file ? req.file.path : null;
-
-//         const query = `
-//             UPDATE tbl_lead 
-//             SET name = ?, email = ?, phone = ?, designation = ?, file_path = ?, city = ?, fbid = ?, updated_date = NOW()
-//             WHERE lead_id = ?
-//         `;
-
-//         const result = await executeQuery(query, [names, email, phone, designation, filePath, city, fbid, lead_id]);
-
-//         return res.status(200).json({
-//             success: true,
-//             message: "Lead updated successfully",
-//             data: {
-//                 lead_id, names, email, phone, designation, filePath, city, FBID, updated_date: Date.now()
-//             },
-//         });
-
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({
-//             success: false,
-//             message: "Error in updating lead",
-//             error: error.message,
-//         });
-//     }
-// };
-
+// GET LEAD_ID
 const getLead_id = async (req, res) => {
     try {
         const { lead_id } = req.params;
@@ -311,13 +271,13 @@ const getLead_id = async (req, res) => {
         }
 
         // console.log('LeadId:', lead_id);
-        
+
         const query = "SELECT * FROM tbl_lead WHERE lead_id = ?";
         const result = await executeQuery(query, [lead_id]);
 
         if (result.length === 0) {
             return res.status(404).json({ message: "Lead not found" });
-        } 
+        }
 
         res.json(result[0]);
     } catch (error) {
@@ -328,5 +288,86 @@ const getLead_id = async (req, res) => {
     }
 };
 
+// LOGIN x
+const login = async (req, res) => {
+  try {
+    const { u_email, u_password } = req.body;
 
-module.exports = { getData, createData, getPdf, createCsv, exportCsv, updateData, getLead_id }
+    if (!u_email || !u_password) {
+      return res.send({
+        success: false,
+        message: "Provide email or password",
+      });
+    }
+
+    const query = `SELECT * FROM tbl_user WHERE u_email=?`;
+    const result = await executeQuery(query, [u_email]);
+
+    if (result.length === 0) {
+      return res.send({
+        success: false,
+        message: "Wrong Email",
+      });
+    }
+
+    const user = result[0];
+
+    const isHashed = user.u_password.startsWith('$2b$'); 
+    
+    if (!isHashed) {
+      const hashedPassword = await bcrypt.hash(user.u_password, 10);
+
+      await executeQuery(
+        `UPDATE tbl_user SET u_password = ? WHERE u_id = ?`,
+        [hashedPassword, user.u_id]
+      );
+      
+      const isMatch = await bcrypt.compare(u_password, hashedPassword);
+      if (!isMatch) {
+        return res.json({
+          success: false,
+          message: 'Wrong password',
+        });
+      }
+    } else {
+      const isMatch = await bcrypt.compare(u_password, user.u_password);
+      if (!isMatch) {
+        return res.json({
+          success: false,
+          message: 'Wrong password',
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: 'Login successful',
+    //   user: {
+    //     id: user.id,
+    //     email: user.u_email,
+    //     name: user.u_name,
+    //   },
+      user: req.session.user,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.send({
+      success: false,
+      message: "Error in login",
+      error,
+    });
+  }
+};
+
+const logout = async (req,res)=>{
+        req.session.destroy((err) => {
+          if (err) {
+            return res.status(500).send({ success: false, message: "Logout failed" });
+          }
+          res.clearCookie('connect.sid'); 
+          res.send({ success: true, message: "Logged out successfully" });
+        });
+}
+
+module.exports = { getData, createData, getPdf, createCsv, exportCsv, updateData, getLead_id, login, logout }
