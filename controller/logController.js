@@ -1,10 +1,12 @@
-const { executeQuery } = require("../config/db.js");
+const { executeQuery } = require("../config/db");
 const fs = require("fs");
 const fastCsv = require("fast-csv");
 const path = require("path");
 const os = require("os");
 const csvParser = require('csv-parser');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
+
 
 
 // Connection
@@ -174,8 +176,9 @@ const exportCsv = async (req, res) => {
         if (!start_date || !end_date) {
             res.send({
                 success: false,
-                message: "Set the start date and end date"
+                message: "Set the start date and end date",
             });
+            return;
         }
         const query = ` SELECT name, email, phone, designation, city, fbid, created_date
     FROM tbl_lead
@@ -288,7 +291,7 @@ const getLead_id = async (req, res) => {
     }
 };
 
-// LOGIN x
+// LOGIN 
 const login = async (req, res) => {
   try {
     const { u_email, u_password } = req.body;
@@ -339,15 +342,20 @@ const login = async (req, res) => {
       }
     }
 
+    const token = jwt.sign(
+        { id: user.u_id, email: user.u_email, name: user.u_name },
+        secretKey,
+        { expiresIn: "1d" }
+      );
+
     return res.json({
       success: true,
       message: 'Login successful',
-    //   user: {
-    //     id: user.id,
-    //     email: user.u_email,
-    //     name: user.u_name,
-    //   },
-      user: req.session.user,
+      token,
+      user: {
+        email: user.u_email,
+        name: user.u_name,
+      },
     });
 
   } catch (error) {
@@ -360,14 +368,13 @@ const login = async (req, res) => {
   }
 };
 
-const logout = async (req,res)=>{
-        req.session.destroy((err) => {
-          if (err) {
-            return res.status(500).send({ success: false, message: "Logout failed" });
-          }
-          res.clearCookie('connect.sid'); 
-          res.send({ success: true, message: "Logged out successfully" });
-        });
-}
 
-module.exports = { getData, createData, getPdf, createCsv, exportCsv, updateData, getLead_id, login, logout }
+// LOGOUT
+const logout = async (req, res) => {
+    return res.send({
+      success: true,
+      message: "Logged out successfully. Please remove the token on client side.",
+    });
+  };
+
+module.exports = { getData, createData, getPdf, createCsv, exportCsv, updateData, getLead_id, login, logout }; 
