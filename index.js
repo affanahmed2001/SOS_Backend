@@ -5,15 +5,14 @@ const cors = require("cors");
 const path = require("path");
 const cookieParser=require("cookie-parser");
 // const session = require('express-session');
-const dataRoutes  = require("./routes/logroutes");
-console.log(dataRoutes);
+
 
 const jwt=require("jsonwebtoken");
 secretKey=process.env.JWT_TOKEN;
 
 
 var corsOptions = {
-    origin: "http://localhost:5173",
+    origin: "*",
     optionSuccessstatus: "200",
     credentials: true
 }
@@ -23,7 +22,8 @@ server.use(cors(corsOptions));
 
 server.use(express.json());
 server.use(cookieParser());
-
+const dataRoutes  = require("./routes/logroutes");
+console.log(dataRoutes);
 server.use("/assets/pdf/", express.static(path.join(__dirname, "/assets/pdf/")));
 
 // console.log(dataRoutes);
@@ -32,4 +32,4 @@ const PORT = process.env.PORT;
 
 
 
-server.listen(PORT, () => { console.log('server running'); });
+server.listen(PORT, () => { console.log(`server runningon ${PORT}`); });
