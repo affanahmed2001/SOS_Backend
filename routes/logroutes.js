@@ -11,10 +11,6 @@ router.get('/get',authenticationToken, async (req, res) => {
     getData(req, res);
 });
 
-// router.get('/get', authenticationToken, getData)
-
-
-
 
 router.post("/create", authenticationToken, uploadpdf.single("cv"), async (req, res) => {
     createData(req, res);
@@ -46,13 +42,7 @@ router.post("/login", async (req, res) => {
 
 router.post("/logout", async (req, res) => {
     logout(req, res);
-})
+});
 
-
-// router.get('/get',async(req,res)=>{
-//     getData(req,res)
-// })
-
-router.get('/get', getData)
 
 module.exports = router;

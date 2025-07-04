@@ -3,6 +3,7 @@ const server = express();
 const dotenv = require("dotenv").config();
 const cors = require("cors");
 const path = require("path");
+const cookieParser=require("cookie-parser");
 // const session = require('express-session');
 const dataRoutes  = require("./routes/logroutes");
 console.log(dataRoutes);
@@ -21,10 +22,11 @@ server.use(cors(corsOptions));
 
 
 server.use(express.json());
+server.use(cookieParser());
 
 server.use("/assets/pdf/", express.static(path.join(__dirname, "/assets/pdf/")));
 
-console.log(dataRoutes);
+// console.log(dataRoutes);
 server.use("/data", dataRoutes);
 const PORT = process.env.PORT;
 
