@@ -12,7 +12,7 @@ secretKey=process.env.JWT_TOKEN;
 
 
 var corsOptions = {
-    origin: "*",
+    origin: "http://localhost:5173",
     optionSuccessstatus: "200",
     credentials: true
 }
