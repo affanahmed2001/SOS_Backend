@@ -12,8 +12,8 @@ secretKey=process.env.JWT_TOKEN;
 
 
 var corsOptions = {
-    origin: "https://sos.elloweb.com/",
-    optionSuccessstatus: "200",
+	origin: "https://sos.elloweb.com",
+   optionsSuccessStatus: 200,
     credentials: true
 }
 server.use(cors(corsOptions));
