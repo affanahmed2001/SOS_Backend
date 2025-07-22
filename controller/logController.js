@@ -330,12 +330,14 @@ const login = async (req, res) => {
     );
 
     res.cookie('token', token, {
-      httpOnly: true,
-  secure: true,            
-  sameSite: 'None',        
+      httpOnly: true,            
   domain: '.elloweb.com',  
   path: '/',
-  maxAge: 24 * 60 * 60 * 1000,
+      // httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+      sameSite: 'None',
+
     });
 
     return res.send({
