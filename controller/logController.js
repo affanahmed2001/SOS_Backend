@@ -324,10 +324,11 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.username, name: user.u_name },
+      { id: user.id, email: user.username },
       secretKey,
       { expiresIn: "1d" }
     );
+    
 
     res.cookie('token', token, {
       httpOnly: true,
