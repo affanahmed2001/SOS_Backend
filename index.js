@@ -10,9 +10,10 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 secretKey = process.env.JWT_TOKEN;
 
+const allowedOrigins = ["https://sos.elloweb.com", "http://localhost:5173"]
 
 var corsOptions = {
-  origin: ("https://sos.elloweb.com", "http://localhost:5173"),
+  origin: allowedOrigins,
   optionsSuccessStatus: 200,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
