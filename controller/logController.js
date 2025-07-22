@@ -328,15 +328,22 @@ const login = async (req, res) => {
       secretKey,
       { expiresIn: "1d" }
     );
-    
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
-      secure: false,
-      sameSite: 'None',
-
+    return res.json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: { username: user.username, name: user.u_name }
     });
+
+
+    // res.cookie('token', token, {
+    //   httpOnly: true,
+    //   maxAge: 24 * 60 * 60 * 1000,
+    //   secure: false,
+    //   sameSite: 'None',
+
+    // });
 
     return res.send({
       success: true,

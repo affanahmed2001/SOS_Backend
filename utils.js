@@ -3,13 +3,13 @@ const secretKey = process.env.JWT_TOKEN;
 
 
 const authenticationToken = (req, res, next) => {
-    // const token = req.headers['authorization']?.split(' ')[1];
-    const token = req.cookies.token;
+    const token = req.headers['authorization']?.split(' ')[1];
+    // const token = req.cookies.token;
 
-    console.log("TOKEN: ", token)
-    console.log("Cookies: ", req.cookies)
-    
-   
+    // console.log("TOKEN: ", token)
+    // console.log("Cookies: ", req.cookies)
+
+
     if (!token) {
         return res.status(403).json({
             success: false,
