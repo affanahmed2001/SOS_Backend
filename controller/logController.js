@@ -218,7 +218,10 @@ const exportCsv = async (req, res) => {
 // UPDATE DATA
 const updateData = async (req, res) => {
   try {
-    const { lead_id, name, email, phone, designation, city } = req.body;
+    const{lead_id}=req.params;
+    const {  name, email, phone, designation, city } = req.body;
+    // console.log(lead_id);
+    
 
 
     if (!lead_id) {
