@@ -28,7 +28,7 @@ router.get("/export", authenticationToken, async (req, res) => {
     exportCsv(req, res);
 });
 
-router.put("/update/:lead_id", authenticationToken, uploadpdf.single("cv"), async (req, res) => {
+router.put("/update/", authenticationToken, uploadpdf.single("cv"), async (req, res) => {
     updateData(req, res);
 });
 
